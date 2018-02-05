@@ -104,7 +104,7 @@ function bot(data,socket,questionNum) {
     }
   }
   else{
-    if(input.toLowerCase()==='yes' || input.toLowerCase()==='y') {
+    if (input.toLowerCase().includes('y')) {
       jokeNum++;
       if (jokeNum >= jokeStart.length) {
         answer = 'Sorry, those are all the jokes I have. Thanks for participating! :-)';
@@ -117,7 +117,7 @@ function bot(data,socket,questionNum) {
         questionNum = -1;
       }
     }
-    else if (input.toLowerCase()==='no' || input.toLowerCase()==='n') {
+    else if (input.toLowerCase().includes('n')) {
       answer = 'Thanks for participating!';
       question = '';
     }
