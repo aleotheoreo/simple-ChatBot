@@ -9,7 +9,31 @@ var app = express(); // webapp
 var http = require('http').Server(app); // connects http library to server
 var io = require('socket.io')(http); // connect websocket library to server
 var serverPort = 8000;
-
+var jokeNum;
+var jokeStart = [
+    'A broken pencil',
+    'Owls say',
+    'Boo',
+    'Europe',
+    'Theodore',
+    'Amos',
+    'Cow\'s go',
+    'Little old lady',
+    'Nunya',
+    'Etch'
+];
+var jokeEnd = [
+    'Never mind, it\'s pointless.',
+    'Yes, they do.',
+    'Aw, don\'t cry!',
+    'No, you\'re a poo!',
+    'Theodore wasn\'t open, so I knocked.',
+    'A mosquito.',
+    'No, silly. Cows go moo!',
+    'I didn\'t know you could yodel.',
+    'Nunya business!',
+    'Bless you!'
+];
 
 //---------------------- WEBAPP SERVER SETUP ---------------------------------//
 // use express to create the simple webapp
@@ -28,13 +52,13 @@ http.listen(serverPort, function() {
 io.on('connect', function(socket) {
   console.log('a new user connected');
   var questionNum = 0; // keep count of question, used for IF condition.
+  jokeNum = 0;
   socket.on('loaded', function(){// we wait until the client has loaded and contacted us that it is ready to go.
 
-  socket.emit('answer',"Hey, Hello I am \"___*-\" a simple chat bot example."); //We start with the introduction;
-  setTimeout(timedQuestion, 2500, socket,"What is your Name?"); // Wait a moment and respond with a question.
-
+  socket.emit('answer',"Hello, I am \"-*KNOCKBOT*-\" a simple chat bot example."); //We start with the introduction;
+  setTimeout(timedQuestion, 2500, socket,"What is your name?"); // Wait a moment and respond with a question.
 });
-  socket.on('message', (data)=>{ // If we get a new message from the client we process it;
+  socket.on('message', (data) => { // If we get a new message from the client we process it;
         console.log(data);
         questionNum= bot(data,socket,questionNum);	// run the bot function with the new message
       });
@@ -51,50 +75,59 @@ function bot(data,socket,questionNum) {
 
 /// These are the main statments that make up the conversation.
   if (questionNum == 0) {
-  answer= 'Hello ' + input + ' :-)';// output response
-  waitTime =2000;
-  question = 'How old are you?';			    	// load next question
+      answer = 'Hello ' + input + ' :-)';// output response
+      waitTime = 2000;
+      question = 'Knock! Knock!';
   }
   else if (questionNum == 1) {
-  answer= 'Really ' + input + ' Years old? So that means you where born in: ' + (2018-parseInt(input));// output response
-  waitTime =2000;
-  question = 'Where do you live?';			    	// load next question
+      if (input.toLowerCase().includes('who\'s there')) {
+        question = jokeStart[jokeNum];
+      }
+      else {
+          answer = 'You\'re supposed to say \"Who\'s there?\"!';
+          waitTime = 2000;
+          question = 'Try again!';
+          questionNum--;
+      }
   }
   else if (questionNum == 2) {
-  answer= ' Cool! I have never been to ' + input+'.';
-  waitTime =2000;
-  question = 'Whats your favorite Color?';			    	// load next question
-  }
-  else if (questionNum == 3) {
-  answer= 'Ok, ' + input+' it is.';
-  socket.emit('changeBG',input.toLowerCase());
-  waitTime = 2000;
-  question = 'Can you still read the font?';			    	// load next question
-  }
-  else if (questionNum == 4) {
-    if(input.toLowerCase()==='yes'|| input===1){
-      answer = 'Perfect!';
-      waitTime =2000;
-      question = 'Whats your favorite place?';
+    if (input.toLowerCase().includes(jokeStart[jokeNum].toLowerCase() + ' who')) {
+      answer = jokeEnd[jokeNum] + ' :-)';
+      waitTime = 3000;
+      question = 'Would you like another joke?';
     }
-    else if(input.toLowerCase()==='no'|| input===0){
-        socket.emit('changeFont','white'); /// we really should look up the inverse of what we said befor.
-        answer='How about now?'
-        question='';
-        waitTime =0;
-        questionNum--; // Here we go back in the question number this can end up in a loop
-    }else{
-      answer=' I did not understand you. Can you please answer with simply with yes or no.'
-      question='';
+    else {
+      answer = 'You\'re supposed to say \"' + jokeStart[jokeNum] + ' who?\" !';
+      waitTime = 3000;
+      question = 'Try again!';
       questionNum--;
-      waitTime =0;
     }
-  // load next question
   }
   else{
-    answer= 'I have nothing more to say!';// output response
-    waitTime =0;
-    question = '';
+    if(input.toLowerCase()==='yes' || input.toLowerCase()==='y') {
+      jokeNum++;
+      if (jokeNum >= jokeStart.length) {
+        answer = 'Sorry, those are all the jokes I have. Thanks for participating! :-)';
+        question = '';
+      }
+      else {
+        answer = 'Great!';// output response
+        waitTime = 0;
+        question = 'Press [Enter] to restart!';
+        questionNum = -1;
+      }
+    }
+    else if (input.toLowerCase()==='no' || input.toLowerCase()==='n') {
+      answer = 'Thanks for participating!';
+      question = '';
+    }
+    else {
+      answer = 'Please enter \"Yes\" or \"No\".';
+      waitTime = 3000;
+      question = 'Try again!';
+      questionNum--;
+    }
+
   }
 
 
